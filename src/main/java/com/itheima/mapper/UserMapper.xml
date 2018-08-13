@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.mapper.UserMapper">
+    <insert id="insertUser" parameterType="user">
+        update user
+        <set>
+            <if test="username!=null and username!=''">
+                username = #{username},
+            </if>
+            <if test="sex!=null and sex!=''">
+                sex = #{sex},
+            </if>
+            <if test="address!=null and address!=''">
+                address = #{address},
+            </if>
+        </set>
+        where
+        id = #{id}
+    </insert>
+
+    <select id="selectUserById" parameterType="int" resultType="com.itheima.pojo.User">
+          select * from user where id=#{id}
+    </select>
+    <select id="selectUserByName" parameterType="string" resultType="com.itheima.pojo.User">
+          select * from user where username like '%${value}%'
+    </select>
+
+    <resultMap id="UserOrders" type="Orders">
+        <id column="oid" property="id"/>
+        <result column="number" property="number"/>
+        <result column="createtime" property="createtime"/>
+        <collection property="orderdetails" resultMap="ordersitems">
+        </collection>
+    </resultMap>
+    <resultMap id="ordersitems" type="Orderdetail">
+        <result column="items_num" property="items_num"/>
+        <association property="item" javaType="Items">
+            <result property="name" column="name"/>
+        </association>
+    </resultMap>
+    <resultMap id="UserReport" type="User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <collection property="list" resultMap="UserOrders">
+        </collection>
+    </resultMap>
+    <select id="reportOrders" resultMap="UserReport">
+        SELECT u.id,u.username,o.id oid,o.number,o.createtime,i.name,od.items_num FROM
+        USER u LEFT JOIN orders o ON u.id=o.user_id LEFT JOIN  orderdetail od ON
+        o.id = od.orders_id LEFT JOIN  items i ON od.items_id=i.id
+    </select>
+</mapper>
